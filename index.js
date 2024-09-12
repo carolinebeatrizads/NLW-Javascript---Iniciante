@@ -1,6 +1,7 @@
 // Importa as funções 'select' e 'input' do pacote '@inquirer/prompts' para criar prompts interativos no terminal
 const { select, input, checkbox } = require('@inquirer/prompts')
 
+let mensagem = "Bem-vindo ao App de Metas"
 // Define um objeto 'meta' que representa uma meta com uma descrição (value) e um status de conclusão (checked)
 let meta = {
     value: "Tomar 3L de água por dia",
@@ -24,6 +25,8 @@ const cadastrarMeta = async () => {
     // Adiciona a nova meta ao array 'metas' com o status 'checked' definido como 'false'
     metas.push(
         { value: meta, checked: false})
+
+    mensagem = "Meta cadastrada com sucesso!"
 }
 
 const listarMetas = async () => {
@@ -38,7 +41,7 @@ const listarMetas = async () => {
     })
 
     if(respostas.length == 0){
-        console.log("Nenhuma meta foi selecionada.")
+        mensagem = "Nenhuma meta foi selecionada."
         return
     }  
 
@@ -50,7 +53,7 @@ const listarMetas = async () => {
         meta.checked = true
     })
 
-    console.log("Meta(s) marcadas como concluídas.")
+    mensagem = "Meta(s) marcadas como concluídas."
 }
 
 const metasRealizadas =  async () => {
@@ -59,7 +62,7 @@ const metasRealizadas =  async () => {
     })
 
     if(realizadas.length == 0){
-        console.log("Não existe metas realizadas.")
+        mensagem = "Não existe metas realizadas."
         return
     }
 
@@ -67,8 +70,6 @@ const metasRealizadas =  async () => {
         message: "Metas Realizadas",
         choices: [...realizadas]
     })
-
-    console.log(realizadas)
 }
 
 const metasAbertas = async () => {
@@ -77,7 +78,7 @@ const metasAbertas = async () => {
     })
 
     if(abertas.length == 0){
-        console.log("Não existem metas abertas.")
+        mensagem = "Não existem metas abertas."
         return
     }
 
@@ -87,10 +88,46 @@ const metasAbertas = async () => {
     })
 }
 
+const deletarMetas = async () => {
+    const metasDesmarcadas = metas.map((meta) => {
+        return {value: meta.value, checked: false}
+    })
+
+    const itensDeletar = await checkbox({
+        message: "Use as setas para mudar de meta, o espaço para marcar ou desmarcar e o enter para finalizar essa etapa",
+        choices: [...metasDesmarcadas],
+        instructions: false
+    })
+
+    if(itensDeletar.length == 0){
+        console.log("Nenhum item para deletar.")
+        return
+    }
+
+
+    itensDeletar.forEach((item) => {
+        metas = metas.filter((meta) => {
+            return meta.value != item
+        })
+    })
+}
+
+const mostrarMensagem = () => {
+    console.clear()
+
+    if(mensagem != ""){
+        console.log(mensagem)
+        console.log("")
+        mensagem = ""
+    }
+
+}
+
 // Função principal que controla o fluxo do programa
 const start = async () => {
     // Loop infinito para manter o programa executando até que o usuário escolha sair
     while(true){
+        mostrarMensagem()
         // Exibe um prompt de seleção no terminal para o usuário escolher uma opção do menu
         const opcao = await select({
             message: "Menu >",
@@ -112,6 +149,10 @@ const start = async () => {
                     value: "abertas"
                 },
                 {
+                    name: "Deletar Metas",
+                    value: "deletar"
+                },
+                {
                     name: "Sair",
                     value: "sair"
                 }
@@ -121,8 +162,7 @@ const start = async () => {
         // Executa diferentes ações com base na opção escolhida pelo usuário
         switch(opcao){
             case "cadastrar":
-                await cadastrarMeta() // Chama a função 'cadastrarMeta' para adicionar uma nova meta
-                console.log(metas) // Exibe todas as metas cadastradas no console
+                await cadastrarMeta()
                 break
             case "listar":
                 await listarMetas()
@@ -132,6 +172,9 @@ const start = async () => {
                 break
             case "abertas":
                 await metasAbertas()
+                break
+            case "deletar":
+                await deletarMetas()
                 break
             case "sair":
                 return // Encerra o loop e finaliza o programa
