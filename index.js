@@ -1,15 +1,24 @@
 // Importa as funções 'select' e 'input' do pacote '@inquirer/prompts' para criar prompts interativos no terminal
 const { select, input, checkbox } = require('@inquirer/prompts')
+const fs = require("fs").promises
 
 let mensagem = "Bem-vindo ao App de Metas"
-// Define um objeto 'meta' que representa uma meta com uma descrição (value) e um status de conclusão (checked)
-let meta = {
-    value: "Tomar 3L de água por dia",
-    checked: false
+
+let metas
+
+const carregarMetas = async () => {
+    try{
+        const dados = await fs.readFile("metas.json", "utf-8")
+        metas = JSON.parse(dados)
+    }
+    catch(erro) {
+        metas = []
+    }
 }
 
-// Cria um array 'metas' que armazena todas as metas, começando com a meta inicial definida acima
-let metas = [ meta ]
+const salvarMetas = async () => {
+    await fs.writeFile("metas.json", JSON.stringify(metas, null, 2))
+}
 
 // Função assíncrona para cadastrar uma nova meta
 const cadastrarMeta = async () => {
@@ -30,6 +39,11 @@ const cadastrarMeta = async () => {
 }
 
 const listarMetas = async () => {
+    if(metas.length == 0){
+        mensagem = "Não existem metas."
+        return
+    }
+
     const respostas = await checkbox({
         message: "Use as setas para mudar de meta, o espaço para marcar ou desmarcar e o entes para finalizar essa etapa",
         choices: [...metas],
@@ -57,6 +71,11 @@ const listarMetas = async () => {
 }
 
 const metasRealizadas =  async () => {
+    if(metas.length == 0){
+        mensagem = "Não existem metas."
+        return
+    }
+
     const realizadas = metas.filter((meta) => {
         return meta.checked
     })
@@ -73,6 +92,11 @@ const metasRealizadas =  async () => {
 }
 
 const metasAbertas = async () => {
+    if(metas.length == 0){
+        mensagem = "Não existem metas."
+        return
+    }
+
     const abertas = metas.filter((meta) => {
         return meta.checked != true
     })
@@ -89,6 +113,11 @@ const metasAbertas = async () => {
 }
 
 const deletarMetas = async () => {
+    if(metas.length == 0){
+        mensagem = "Não existem metas."
+        return
+    }
+
     const metasDesmarcadas = metas.map((meta) => {
         return {value: meta.value, checked: false}
     })
@@ -103,7 +132,6 @@ const deletarMetas = async () => {
         console.log("Nenhum item para deletar.")
         return
     }
-
 
     itensDeletar.forEach((item) => {
         metas = metas.filter((meta) => {
@@ -125,9 +153,11 @@ const mostrarMensagem = () => {
 
 // Função principal que controla o fluxo do programa
 const start = async () => {
+    await carregarMetas()
     // Loop infinito para manter o programa executando até que o usuário escolha sair
     while(true){
         mostrarMensagem()
+        await salvarMetas()
         // Exibe um prompt de seleção no terminal para o usuário escolher uma opção do menu
         const opcao = await select({
             message: "Menu >",

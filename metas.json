@@ -1,0 +1,14 @@
+[
+  {
+    "value": "Andar 20 minutos por dia",
+    "checked": false
+  },
+  {
+    "value": "Ler todos os dias",
+    "checked": true
+  },
+  {
+    "value": "Usar menos o celular",
+    "checked": false
+  }
+]
