@@ -41,7 +41,7 @@ const listarMetas = async () => {
     metas.forEach((m) => {
         m.checked = false
     })
-    
+
     respostas.forEach((resposta) => {
         const meta = metas.find((m) => {
             return m.value == resposta
@@ -51,6 +51,24 @@ const listarMetas = async () => {
     })
 
     console.log("Meta(s) marcadas como concluídas.")
+}
+
+const metasRealizadas =  async () => {
+    const realizadas = metas.filter((meta) => {
+        return meta.checked
+    })
+
+    if(realizadas.length == 0){
+        console.log("Não existe metas realizadas.")
+        return
+    }
+
+    await select({
+        message: "Metas Realizadas",
+        choices: [...realizadas]
+    })
+
+    console.log(realizadas)
 }
 
 // Função principal que controla o fluxo do programa
@@ -70,6 +88,10 @@ const start = async () => {
                     value: "listar"
                 },
                 {
+                    name: "Metas Realizadas",
+                    value: "realizadas"
+                },
+                {
                     name: "Sair",
                     value: "sair"
                 }
@@ -84,6 +106,9 @@ const start = async () => {
                 break
             case "listar":
                 await listarMetas()
+                break
+            case "realizadas":
+                await metasRealizadas()
                 break
             case "sair":
                 return // Encerra o loop e finaliza o programa
