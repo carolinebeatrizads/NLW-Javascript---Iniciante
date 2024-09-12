@@ -1,5 +1,5 @@
 // Importa as funções 'select' e 'input' do pacote '@inquirer/prompts' para criar prompts interativos no terminal
-const { select, input } = require('@inquirer/prompts')
+const { select, input, checkbox } = require('@inquirer/prompts')
 
 // Define um objeto 'meta' que representa uma meta com uma descrição (value) e um status de conclusão (checked)
 let meta = {
@@ -24,6 +24,33 @@ const cadastrarMeta = async () => {
     // Adiciona a nova meta ao array 'metas' com o status 'checked' definido como 'false'
     metas.push(
         { value: meta, checked: false})
+}
+
+const listarMetas = async () => {
+    const respostas = await checkbox({
+        message: "Use as setas para mudar de meta, o espaço para marcar ou desmarcar e o entes para finalizar essa etapa",
+        choices: [...metas],
+        instructions: false
+    })
+
+    if(respostas.length == 0){
+        console.log("Nenhuma meta foi selecionada.")
+        return
+    }
+
+    metas.forEach((m) => {
+        m.checked = false
+    })
+    
+    respostas.forEach((resposta) => {
+        const meta = metas.find((m) => {
+            return m.value == resposta
+        })
+
+        meta.checked = true
+    })
+
+    console.log("Meta(s) marcadas como concluídas.")
 }
 
 // Função principal que controla o fluxo do programa
@@ -56,7 +83,7 @@ const start = async () => {
                 console.log(metas) // Exibe todas as metas cadastradas no console
                 break
             case "listar":
-                console.log("Vamos listar...") // Placeholder para listar metas (a ser implementado)
+                await listarMetas()
                 break
             case "sair":
                 return // Encerra o loop e finaliza o programa
